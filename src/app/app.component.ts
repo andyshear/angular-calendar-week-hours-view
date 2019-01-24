@@ -1,6 +1,6 @@
 import {Component} from '@angular/core';
 import {addDays, addHours, endOfDay, endOfMonth, isSameDay, isSameMonth, startOfDay, subDays} from 'date-fns';
-import {Subject} from 'rxjs/Subject';
+import {Subject} from 'rxjs';
 import {CalendarEvent, CalendarEventTimesChangedEvent} from 'angular-calendar';
 
 const colors: any = {

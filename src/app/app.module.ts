@@ -3,7 +3,8 @@ import {NgModule} from '@angular/core';
 
 import {AppComponent} from './app.component';
 import {CalendarWeekHoursViewModule} from './modules/calendar-week-hours-view/calendar-week-hours-view.module';
-import {CalendarModule} from 'angular-calendar';
+import {CalendarModule, DateAdapter} from 'angular-calendar';
+import { adapterFactory } from 'angular-calendar/date-adapters/date-fns';
 
 @NgModule({
     declarations: [
@@ -11,7 +12,10 @@ import {CalendarModule} from 'angular-calendar';
     ],
     imports: [
         BrowserModule,
-        CalendarModule.forRoot(),
+        CalendarModule.forRoot({
+            provide: DateAdapter,
+            useFactory: adapterFactory
+        }),
         CalendarWeekHoursViewModule
     ],
     providers: [],
