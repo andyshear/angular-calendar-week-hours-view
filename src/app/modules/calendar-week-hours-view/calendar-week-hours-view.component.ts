@@ -11,13 +11,12 @@ import {
     Output,
     TemplateRef
 } from '@angular/core';
-import {CalendarEvent, DayViewHour, DayViewHourSegment, WeekDay, WeekViewEvent, WeekViewEventRow} from 'calendar-utils';
-import {Subject} from 'rxjs/Subject';
+import {CalendarEvent, DayViewHour, DayViewHourSegment, WeekDay, WeekViewAllDayEvent, WeekViewAllDayEventRow} from 'calendar-utils';
+import {Subject,Subscription} from 'rxjs';
 import {ResizeEvent} from 'angular-resizable-element';
 import {addDays} from 'date-fns';
-import {Subscription} from 'rxjs/Subscription';
-import {CalendarEventTimesChangedEvent, CalendarUtils} from 'angular-calendar';
-import {WeekViewEventResize} from 'angular-calendar/modules/week/calendar-week-view.component';
+import {CalendarEventTimesChangedEvent, CalendarUtils, CalendarEventTimesChangedEventType} from 'angular-calendar';
+import {WeekViewAllDayEventResize} from 'angular-calendar/modules/week/calendar-week-view.component';
 import {validateEvents} from 'angular-calendar/modules/common/util';
 import {CalendarResizeHelper} from 'angular-calendar/modules/common/calendar-resize-helper.provider';
 import {CalendarDragHelper} from 'angular-calendar/modules/common/calendar-drag-helper.provider';
@@ -245,7 +244,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
     /**
      * @hidden
      */
-    eventRows: WeekViewEventRow[] = [];
+    eventRows: WeekViewAllDayEventRow[] = [];
 
     /**
      * @hidden
@@ -255,7 +254,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
     /**
      * @hidden
      */
-    currentResizes: Map<WeekViewEvent, WeekViewEventResize> = new Map();
+    currentResizes: Map<WeekViewAllDayEvent, WeekViewAllDayEventResize> = new Map();
 
     /**
      * @hidden
@@ -333,7 +332,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
      * @hidden
      */
     resizeStarted(weekViewContainer: HTMLElement,
-                  weekEvent: WeekViewEvent,
+                  weekEvent: WeekViewAllDayEvent,
                   resizeEvent: ResizeEvent): void {
         this.currentResizes.set(weekEvent, {
             originalOffset: weekEvent.offset,
@@ -353,10 +352,10 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
     /**
      * @hidden
      */
-    resizing(weekEvent: WeekViewEvent,
+    resizing(weekEvent: WeekViewAllDayEvent,
              resizeEvent: ResizeEvent,
              dayWidth: number): void {
-        const currentResize: WeekViewEventResize = this.currentResizes.get(
+        const currentResize: WeekViewAllDayEventResize = this.currentResizes.get(
             weekEvent
         );
 
@@ -373,8 +372,8 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
     /**
      * @hidden
      */
-    resizeEnded(weekEvent: WeekViewEvent): void {
-        const currentResize: WeekViewEventResize = this.currentResizes.get(
+    resizeEnded(weekEvent: WeekViewAllDayEvent): void {
+        const currentResize: WeekViewAllDayEventResize = this.currentResizes.get(
             weekEvent
         );
 
@@ -396,14 +395,14 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
             newEnd = addDays(newEnd, daysDiff);
         }
 
-        this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event});
+        this.eventTimesChanged.emit({type: CalendarEventTimesChangedEventType.Resize,newStart, newEnd, event: weekEvent.event});
         this.currentResizes.delete(weekEvent);
     }
 
     /**
      * @hidden
      */
-    eventDragged(weekEvent: WeekViewEvent,
+    eventDragged(weekEvent: WeekViewAllDayEvent,
                  draggedByPx: number,
                  dayWidth: number): void {
         const daysDragged: number = draggedByPx / dayWidth;
@@ -415,7 +414,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
                 newEnd = addDays(weekEvent.event.end, daysDragged);
             }
 
-            this.eventTimesChanged.emit({newStart, newEnd, event: weekEvent.event});
+            this.eventTimesChanged.emit({type: CalendarEventTimesChangedEventType.Drag,newStart, newEnd, event: weekEvent.event});
         }
     }
 
@@ -436,7 +435,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
             event
         );
         this.validateDrag = ({x, y}) =>
-            this.currentResizes.size === 0 && dragHelper.validateDrag({x, y});
+            this.currentResizes.size === 0 && dragHelper.validateDrag({x, y, snapDraggedEvents:true});
         this.cdr.markForCheck();
     }
 
@@ -459,8 +458,12 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
             weekStartsOn: this.weekStartsOn,
             excluded: this.excludeDays,
             precision: this.precision,
-            absolutePositionedEvents: true
-        }).eventRows;
+            absolutePositionedEvents: true,
+            hourSegments: 1,
+            dayStart: this.dayStartHour,
+            dayEnd: this.dayEndHour,
+            segmentHeight: 1
+        }).allDayEventRows;
     }
 
     private refreshHourGrid(): void {
@@ -488,6 +491,7 @@ export class CalendarWeekHoursViewComponent implements OnChanges, OnInit, OnDest
                  segment: DayViewHourSegment): void {
         if (dropEvent.dropData && dropEvent.dropData.event) {
             this.eventTimesChanged.emit({
+                type: CalendarEventTimesChangedEventType.Drop,
                 event: dropEvent.dropData.event,
                 newStart: segment.date
             });
