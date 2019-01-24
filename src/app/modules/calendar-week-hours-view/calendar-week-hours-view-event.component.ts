@@ -1,5 +1,5 @@
 import {Component, EventEmitter, Input, Output, TemplateRef} from '@angular/core';
-import {WeekViewEvent} from 'calendar-utils';
+import {WeekViewAllDayEvent} from 'calendar-utils';
 
 @Component({
   selector: 'iq-calendar-week-hours-view-event',
@@ -41,7 +41,7 @@ import {WeekViewEvent} from 'calendar-utils';
   `
 })
 export class CalendarWeekHoursViewEventComponent {
-  @Input() weekEvent: WeekViewEvent;
+  @Input() weekEvent: WeekViewAllDayEvent;
 
   @Input() tooltipPlacement: string;
 

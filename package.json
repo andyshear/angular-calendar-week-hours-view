@@ -1,6 +1,6 @@
 {
     "name": "angular-calendar-week-hours-view",
-    "version": "1.0.2",
+    "version": "1.0.3",
     "license": "MIT",
     "author": "Innqube - forked and updated by Andy Shear",
     "keywords": [
@@ -11,7 +11,7 @@
         "week schedule"
     ],
     "repository": {
-        "url": "https://github.com/Innqube/angular-calendar-week-hours-view"
+        "url": "https://github.com/andyshear/angular-calendar-week-hours-view"
     },
     "scripts": {
         "ng": "ng",
@@ -36,6 +36,7 @@
         "@angular/platform-browser-dynamic": "^7.2.2",
         "@angular/router": "^7.2.2",
         "core-js": "^2.4.1",
+        "date-fns": "^1.30.1",
         "rxjs": "^6.3.3",
         "zone.js": "^0.8.29"
     },

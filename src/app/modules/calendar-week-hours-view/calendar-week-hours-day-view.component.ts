@@ -3,11 +3,10 @@ import {
     TemplateRef
 } from '@angular/core';
 import {CalendarEvent, DayView, DayViewEvent, DayViewHour, DayViewHourSegment} from 'calendar-utils';
-import {Subject} from 'rxjs/Subject';
-import {Subscription} from 'rxjs/Subscription';
+import {Subject, Subscription} from 'rxjs';
 import {ResizeEvent} from 'angular-resizable-element';
 import {addMinutes} from 'date-fns';
-import {CalendarEventTimesChangedEvent, CalendarUtils} from 'angular-calendar';
+import {CalendarEventTimesChangedEvent, CalendarUtils, CalendarEventTimesChangedEventType} from 'angular-calendar';
 import {validateEvents} from 'angular-calendar/modules/common/util';
 import {CalendarResizeHelper} from 'angular-calendar/modules/common/calendar-resize-helper.provider';
 import {CalendarDragHelper} from 'angular-calendar/modules/common/calendar-drag-helper.provider';
@@ -338,6 +337,7 @@ export class CalendarWeekHoursDayViewComponent
                  segment: DayViewHourSegment): void {
         if (dropEvent.dropData && dropEvent.dropData.event) {
             this.eventTimesChanged.emit({
+                type: CalendarEventTimesChangedEventType.Drop,
                 event: dropEvent.dropData.event,
                 newStart: segment.date
             });
@@ -394,7 +394,7 @@ export class CalendarWeekHoursDayViewComponent
             newEnd = addMinutes(newEnd, minutesMoved);
         }
 
-        this.eventTimesChanged.emit({newStart, newEnd, event: dayEvent.event});
+        this.eventTimesChanged.emit({type: CalendarEventTimesChangedEventType.Resize,newStart, newEnd, event: dayEvent.event});
         this.currentResizes.delete(dayEvent);
     }
 
@@ -404,7 +404,7 @@ export class CalendarWeekHoursDayViewComponent
             event
         );
         this.validateDrag = ({x, y}) =>
-            this.currentResizes.size === 0 && dragHelper.validateDrag({x, y});
+            this.currentResizes.size === 0 && dragHelper.validateDrag({x, y,snapDraggedEvents:true});
         this.cdr.markForCheck();
     }
 
@@ -419,7 +419,7 @@ export class CalendarWeekHoursDayViewComponent
             if (dayEvent.event.end) {
                 newEnd = addMinutes(dayEvent.event.end, minutesMoved);
             }
-            this.eventTimesChanged.emit({newStart, newEnd, event: dayEvent.event});
+            this.eventTimesChanged.emit({type: CalendarEventTimesChangedEventType.Drag,newStart, newEnd, event: dayEvent.event});
         }
     }
 
